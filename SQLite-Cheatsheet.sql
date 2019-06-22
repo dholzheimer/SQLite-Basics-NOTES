@@ -82,7 +82,22 @@ LIMIT 3
 OFFSET 2;			-- 	<---
 
 -----------------------------------------
+--Sets a condition for the query.
+--Commonly used in SELECT, UPDATE, DELETE statements
+--When a WHERE condition is specified,
+--each row from the input data is evaluated
+--as a boolean expression (T/F). Rows which 
+--return FALSE or NULL are not included in results
+SELECT roleID, branchNo, staffCode
+FROM StaffAssignment
+WHERE roleID = 4; 		--  <---
 
+-----------------------------------------
+--Updates values within an existing table
+--Always use a WHERE clause in an UPDATE 
+UPDATE Author
+SET authorStreet = '12 Park Lane'
+WHERE authorFirstName = 'Mark'
 
 
 
