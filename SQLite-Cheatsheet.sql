@@ -235,3 +235,53 @@ SELECT staffCode, ROUND((JULIANDAY('now', 'localtime') - JULIANDAY(StartDate, 'l
 FROM StaffAssignment;
 
 ----------------------------------------------------------
+Multi-row functions
+--work on multiple rows to give one result per group
+--AKA group or aggregate functions
+Function							Description
+COUNT(*) or COUNT(X)		--	<---The COUNT(X) function returns a count of the number of times that X is not NULL in a group. The COUNT(*) function (with no arguments) returns the total number of rows in the group
+MAX(X)		--	<---It returns the maximum value of all values in the group
+MIN(X)		--	<---It returns the minimum value of all values in the group
+AVG(X)		--	<---It returns the average value of all values in the group
+SUM(X) or TOTAL(X)		--	<---It returns sum of all non-NULL values in the group
+GROUP_CONCAT(X,Y)		--	<---It returns a string which is the concatenation of all non-NULL values of X. If parameter Y is present then it is used as the separator between instances of X
+
+--------------------------------------------------------
+GROUP BY clause
+--Often the intention of using multi-row function is to apply them to selected group, where the group is defined by the data
+--The GROUP BY clause allows a multi-row function to be used on each group specified
+--All columns in the SELECT statement that are not associated with the multi-row function MUST be placed in the GROUP BY clause
+{Example}
+SELECT staffCity, COUNT(staffCity) AS '# of Staff'
+FROM Staff
+GROUP BY staffCity;  --	<---
+
+{Example}
+SELECT roleID, AVG(salary)
+FROM StaffAssignment
+GROUP BY roleID;
+
+-------------------------------------------------------
+HAVING clause
+--The HAVING clause is used to filter the result from a SELECT statement with a multi-row function and a GROUP BY clause
+{Example}
+SELECT branchNo, AVG(salary)
+FROM StaffAssignment
+GROUP BY branchNo
+HAVING AVG(salary) > 54000;
+
+------------------------------------------------------
+JOIN
+--Joins combine columns from multiple tables
+--Most of the time a join condition is specified
+--It is required to prefix the column name with
+----the table name or table alias when the same column
+----name exists in more than one table
+{Example}
+SELECT bookCode, w.authorNo, a.authorNo, authorFirstName
+FROM Writing w, Author a
+WHERE w.authorNo = a.authorNo
+	AND a.authorNo IN (1, 2);
+	--Instead of using the full table name,
+	--it is easier to use a table alias to differentiate
+	--among the same named columns from two or more tables
