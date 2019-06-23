@@ -246,6 +246,7 @@ AVG(X)		--	<---It returns the average value of all values in the group
 SUM(X) or TOTAL(X)		--	<---It returns sum of all non-NULL values in the group
 GROUP_CONCAT(X,Y)		--	<---It returns a string which is the concatenation of all non-NULL values of X. If parameter Y is present then it is used as the separator between instances of X
 
+-------------------------------------------------------
 --------------------------------------------------------
 GROUP BY clause
 --Often the intention of using multi-row function is to apply them to selected group, where the group is defined by the data
@@ -262,6 +263,7 @@ FROM StaffAssignment
 GROUP BY roleID;
 
 -------------------------------------------------------
+-------------------------------------------------------
 HAVING clause
 --The HAVING clause is used to filter the result from a SELECT statement with a multi-row function and a GROUP BY clause
 {Example}
@@ -270,6 +272,7 @@ FROM StaffAssignment
 GROUP BY branchNo
 HAVING AVG(salary) > 54000;
 
+-----------------------------------------------------
 ------------------------------------------------------
 JOIN
 --Joins combine columns from multiple tables
@@ -285,3 +288,51 @@ WHERE w.authorNo = a.authorNo
 	--Instead of using the full table name,
 	--it is easier to use a table alias to differentiate
 	--among the same named columns from two or more tables
+-------			-----------			--------		----------		-------
+JOIN types
+
+INNER JOIN
+--It requires each row in the two joined tables to have matching rows
+--It could use either implicit join notation or explicit join notation
+--Equi-Join vs Non Equi-Join
+{Example} <---Equi-Join
+SELECT bookTitle, authorLastName, pubName, pubDate
+FROM Author a, Writing w, Book b, Publisher p
+WHERE a.authorNo = w.authorNo
+	AND b.bookCode = w.bookCode
+	AND w.pubCode = p.pubCode;
+
+{Example} <---Non Equi-Join
+SELECT bookCode, price, bookGrade
+FROM BookPrice p, BookGrade g
+WHERE price BETWEEN minValue AND maxValue;
+
+---------------
+OUTER JOIN
+--The joined table retains each row even if no other matching row exists
+--Left outer join always contains all rows of the left table even if the join condition does not find any matching row in the right table
+-- No implicit join notation is allowed
+--Right outer join and full outer join are not supported in SQLite
+{Example}
+SELECT authorLastName, bookCode
+FROM Author a LEFT OUTER JOIN Writing w
+ON a.authorNo = w.authorNo;
+--When there is no matching bookCode for an author, a NULL is given
+
+---------------
+CROSS JOIN
+--It joins each row of one table to each row of the other table
+{Example}
+SELECT bookCode, a.authorNo
+FROM Writing w, Author a;
+--This shoud be avoided in most cases
+
+
+----------------
+SELF JOIN
+--It joins a table to itself
+{Example}
+SELECT c.pubName AS 'Publisher', p.pubName AS 'Parent'
+FROM Publisher c, Publisher p
+WHERE c.parentPubCode = p.pubCode;
+
