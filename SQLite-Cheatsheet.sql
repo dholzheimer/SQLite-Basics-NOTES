@@ -336,3 +336,172 @@ SELECT c.pubName AS 'Publisher', p.pubName AS 'Parent'
 FROM Publisher c, Publisher p
 WHERE c.parentPubCode = p.pubCode;
 
+-------------------------------------------------
+Subqueries
+--Subqueries execute before the main query, and the results
+----of the subquery is used to solve the main query.
+--Subqueries can be used in SELECT, FROM, WHERE, and/or HAVING clauses
+{Example}
+Q: 'Who has a higher salary than Jones?'
+	Main Query: 'Staff with a higher salary than Jones'
+	Subquery: "Jone's salary"
+
+-----------------------
+{WHERE subquery}
+
+SELECT staffLastName, salary
+FROM Staff s, StaffAssignment sa
+WHERE s.staffCode = sa.staffCode
+	AND salary > (SELECT salary
+								FROM Staff s, StaffAssignment sa
+								WHERE s.staffCode = sa.staffCode
+									AND LOWER(staffLastName) = 'jones');
+
+
+
+{Single-row Subquery}
+<'Who gets paid the highest?'>
+SELECT staffLastName
+FROM Staff s, StaffAssignment sa
+WHERE s.staffCode = sa.staffCode
+	AND salary = (SELECT MAX(salary)
+									FROM StaffAssignment);
+
+
+{Multi-row subquery}
+<'Who makes a higher salary than the staff with "roleID = 1" ?'>
+SELECT staffLastName
+FROM Staff
+WHERE staffCode IN (SELECT staffCode
+										FROM StaffAssignment
+										WHERE salary > (SELECT MIN(salary)
+																		FROM StaffAssignment
+																		WHERE roleID = 1));
+---------------------
+{HAVING subquery}
+<'Which branches have salaries higher than the minimum salary?'>
+SELECT branchNo, MIN(salary)
+FROM StaffAssignment
+GROUP BY branchNo
+HAVING MIN(salary) > (SELECT MIN(salary)
+											FROM StaffAssignment);
+
+
+----------------------
+{FROM subquery}
+<'Subquery could also be used as a table in the FROM clause
+which could participate in a join just like any other table'>
+
+SELECT MIN(avgSalary)
+FROM (SELECT branchNo, AVG(salary) AS 'avgSalary'
+			 FROM StaffAssignment
+			 GROUP BY branchNo) t; <---- note that this table projrction can be joined to other tables in the query
+
+
+---------------------------
+{UPDATE Subqueries}
+<'Note that it is very important to include a WHERE clause
+otherwise it will screw the table up'>
+
+{Example}
+UPDATE StaffAssignment
+SET salary = (SELECT salary
+							FROM StaffAssignment
+							WHERE staffCode = 7)
+WHERE salary = (SELECT MIN(salary)
+								FROM StaffAssignment);
+
+
+---------------------------------------
+{DELETE Subqueries}
+<'Note that it is very important to include a WHERE clause
+otherwise it will screw the table up'>
+
+{Example}
+DELETE FROM BookPrice
+WHERE bookCode = (SELECT bookCode
+									FROM Book
+									WHERE bookTitle = 'Secrets');
+
+----------------------------------------------------------------------------------------
+
+{Constraints}
+<'Constraints maintain data integrity by controlling
+which values can be stored within a column'>
+
+<'These ocnstraints are supoorted in SQLite...'>
+PRIMARY KEY --  <---- must be both UNIQUE and NOT NULL;
+UNIQUE --  <---- requires that all values in a column or a group of columns are distinct from the others;
+NOT NULL --  <---- this ensures that a value in the column may never be NULL;
+DEFAULT --  <---- this prevents the absence of a value by assigning a default value for a column;
+CHECK --  <---- checks the values from an INSERT or UPDATE statement meet the specified req's (This is normally done in JS nowadays)
+FOREIGN KEY --  <---- ensures that where a key value in one table logically refers to data in another table, the data in the other table acually exists (ENFORCES relationships between tables)
+
+
+{UNIQUE Example}  ----------
+CREATE TABLE Contact (
+	id INTEGER PRIMARY KEY NOT NULL,
+	name TEXT,
+	phone TEXT,
+	UNIQUE (name, phone) --  <----
+);
+
+
+{DEFAULT Example} -----------
+CREATE TABLE MyTime (
+	id INTEGER PRIMARY KEY NOT NULL,
+	mytime DATE NOT NULL DEFAULT(DATETIME('now', 'localtime'))  --  <------
+);
+
+
+{CHECK Example} --------------
+CREATE TABLE Contact (
+	id INTEGER PRIMARY KEY NOT NULL,
+	name TEXT,
+	phone TEXT,
+	CHECK(LENGTH(phone) >= 7 )
+);
+
+{FOREIGN KEY Example}-----------
+CREATE TABLE BookPrice (
+	bookCode INTEGER NOT NULL,
+	StartDate DATE NOT NULL,
+	EndDate DATE,
+	price REAL,
+	PRIMARY KEY (bookCode, StartDate),
+	FOREIGN KEY (bookCode) REFERENCES Book(bookCode)
+	ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+
+
+---------------------------------------------------------------------------------------
+{CASE Expression}
+<'A CASE expression works like a IF-THEN-ELSE in other
+ programming languages; It allows us to do different
+ things on each row of a SELECT statement based on
+ the value of a column'>
+
+{CASE Example}
+SELECT staffCode, role, salary, CASE
+	WHEN LOWER(role) = 'branch manager' THEN salary*0.9
+	WHEN LOWER(role) = 'sales person' THEN salary
+	WHEN LOWER(role) =  'office admin' THEN salary*1.15
+	END revisedSalary
+FROM StaffAssignment s, Role r
+WHERE s.roleID = r.roleID;
+
+
+---------------------------------------------------------------------------------------
+{CAST Expression}
+<'A CAST expression is used to convert data from one
+type to another; It is useful when we need a certain
+data type to use as an input;'>
+
+{CAST example}
+SELECT staffCode, CAST(salary AS INTEGER) AS 'Salary' --  <----
+FROM StaffAssignment;
+
+
+
+--This is just a quick practice for me and should be deleted from the doc
