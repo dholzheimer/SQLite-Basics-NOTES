@@ -338,9 +338,10 @@ WHERE c.parentPubCode = p.pubCode;
 
 -------------------------------------------------
 Subqueries
---Subqueries execute before the main query, and the results
-----of the subquery is used to solve the main query.
---Subqueries can be used in SELECT, FROM, WHERE, and/or HAVING clauses
+<'Subqueries execute before the main query, and the results
+of the subquery is used to solve the main query.
+Subqueries can be used in SELECT, FROM, WHERE, and/or HAVING clauses'>
+
 {Example}
 Q: 'Who has a higher salary than Jones?'
 	Main Query: 'Staff with a higher salary than Jones'
@@ -501,6 +502,120 @@ data type to use as an input;'>
 {CAST example}
 SELECT staffCode, CAST(salary AS INTEGER) AS 'Salary' --  <----
 FROM StaffAssignment;
+
+------------------------------------------------------------------------------------
+{Relational Operations}
+<'the concept of a relational operation is to take one or
+more relations as an input and produce a relation as an output;
+ This allows relational operations to be nested together(subquery)'>
+
+['Relational Operations to be familiar with in SQLite...']
+~UNION / UNION ALL
+~INTERSECT
+~EXCEPT
+
+
+
+[UNION / UNION ALL]
+<'This is a fundamental relational operation;
+Combines the result of 2 SELECT statements into one (given
+that they have the same exact projection of a column)'>
+<'Duplicated rows would be omitted and shown only once in UNION'>
+<'UNION ALL shows all rows as they are'>
+
+
+{UNION example}
+
+SELECT * FROM Book
+WHERE UPPER(bookType) = 'HOR'
+UNION
+SELECT * FROM Book
+WHERE UPPER(paperback) = 'Y'
+ORDER BY bookCode;
+
+
+
+[INTERSECT]
+<'INTERSECT behaves Similarly to UNION but instead of showing
+the non-duplicating rows from the two SELECT statements, it
+shows only the duplicating rows in the result (but not duplicated)'>
+
+{INTERSECT example}
+SELECT * FROM Book
+WHERE UPPER(bookType) = 'HOR'
+INTERSECT  -- <----
+SELECT * FROM Book
+WHERE UPPER(paperback) = 'Y'
+ORDER BY bookCode;
+
+
+
+[EXCEPT]
+<'EXCEPT works like UNION; It shows the rows resulted from
+the first SELECT statement but not the second one; Therefore,
+unlike the other relational operations, the order of the 2
+SELECT statements DO MATTER!'>
+
+{EXCEPT example}
+SELECT * FROM Book
+WHERE UPPER(bookType) = 'HOR'
+EXCEPT  -- <----
+SELECT * FROM Book
+WHERE UPPER(paperback) = 'Y'
+ORDER BY bookCode;
+
+
+[VIEW]
+<'VIEW behaves like a derived table since its content
+is derived from the result of a SELECT statement;
+table is persistent, but veiw is dynamically generated'>
+
+{VIEW example}
+CREATE VIEW LatestBookPrice AS
+	SELECT p1.bookCode, p2.StartDate, p1.EndDate, p1.price
+	FROM BookPrice p1, (SELECT bookCode, MAX(StartDate) StartDate
+											FROM BookPrice
+											GROUP BY bookCode) p2
+	WHERE p1.bookCode = p2.bookCode
+	AND p1.StartDate = p2.StartDate;
+
+	DROP VIEW LatestBookPrice;
+
+-----------------------------------------------------------------------------------
+['Full Table Scan'] GENERAL
+<'Useful when returning ~80% of rows in a table'>
+{Example}
+SELECT *
+FROM R
+WHERE <condition>;
+
+
+['Point Query'] SPECIFIC
+<'Useful for returning less than ~20% of rows in a table'>
+{Example}
+SELECT *
+FROM R
+WHERE score = 5;
+
+
+['Range query']
+<'Useful for returning all rows in a range'>
+{Example}
+SELECT *
+FROM R
+WHERE score > 2
+AND score < 12 ;
+
+
+
+
+
+
+
+
+
+
+
 
 
 
